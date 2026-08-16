@@ -1,43 +1,43 @@
-pipeline{
-    agent {label "slave"}
-    stages{
-        stage("Build"){
-            steps{
-                echo "cloning the ode from github"
+pipeline {
+    agent { label "slave" }
+
+    stages {
+
+        stage("Clone") {
+            steps {
                 git branch: 'main',
-                url: 'https://github.com/mahtabalam139/production-monitoring-dashboard.git'
+                    url: 'https://github.com/mahtabalam139/production-monitoring-dashboard.git'
             }
         }
-        stage("Build the docker images"){
-            steps{
-                echo "building docker images"
-                sh """
-                docker build -t monitoring-dashboard:${BUILD_NUMBER} .
-                docker tag monitoring-dashboard:${BUILD_NUMBER} monitoring-dashboard:latest
-                """
+
+        stage("Build") {
+            steps {
+                sh 'docker build -t monitoring-dashboard:1.0 .'
             }
         }
-        stage("stopping the docker process"){
-            steps{
-                echo "stop the docker process before running "
-                sh """
-                docker stop monitoring-dashboard || true
-                docker rm monitoring-dashboard || true
-                """
+
+        stage("Deploy") {
+            steps {
+                sh '''
+                    docker stop monitoring-dashboard || true
+                    docker rm monitoring-dashboard || true
+
+                    docker run -d \
+                      --name monitoring-dashboard \
+                      -p 8000:8000 \
+                      -v //var/run/docker.sock:/var/run/docker.sock \
+                      monitoring-dashboard:1.0
+                '''
             }
         }
-        stage("Deploy the container"){
-        steps{
-            echo "Deploying container from docker images "
-            sh '''
-            docker run -d \
-              --name monitoring-dashboard \
-              -p 8000:8000 \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              monitoring-dashboard:latest
-            '''
+
+        stage("Verify") {
+            steps {
+                sleep 15
+                sh 'curl -f http://localhost:8000'
+            }
         }
-    }
+
         stage("Veryfying the images an health check "){
             steps{
                 echo "verifying the images "
