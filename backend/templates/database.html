@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="/static/css/database.css">
+{% endblock %}
+
 {% block title %}Database Monitoring{% endblock %}
 
 {% block content %}
@@ -9,75 +13,145 @@
     Database Monitoring
 </h2>
 
-<div class="row">
+<!-- Summary Cards -->
 
-    <div class="col-lg-4 mb-4">
+<div class="row mb-4">
+
+    <div class="col-md-4">
         <div class="card dashboard-card">
             <div class="card-body">
-                <h6>Service</h6>
-                <h2>{{ database.service }}</h2>
+                <h6>Total Databases</h6>
+                <h2 id="databaseCount">
+                    {{ databases|length }}
+                </h2>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4 mb-4">
-        <div class="card-body dashboard-card">
-            <h6>Status</h6>
-
-            {% if database.status == "Running" %}
-                <h2 class="text-success">{{ database.status }}</h2>
-            {% else %}
-                <h2 class="text-danger">{{ database.status }}</h2>
-            {% endif %}
-
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h6>Running</h6>
+                <h2 class="text-success" id="runningCount">
+                    {{ databases|selectattr("status", "equalto", "Running")|list|length }}
+                </h2>
+            </div>
         </div>
     </div>
 
-    <div class="col-lg-4 mb-4">
+    <div class="col-md-4">
         <div class="card dashboard-card">
             <div class="card-body">
-                <h6>Host</h6>
-                <h2>{{ database.host }}</h2>
+                <h6>Offline</h6>
+                <h2 class="text-danger" id="offlineCount">
+                    0
+                </h2>
             </div>
         </div>
     </div>
 
 </div>
+
+
+<!-- Database Table -->
 
 <div class="card dashboard-card">
 
     <div class="card-body">
 
-        <table class="table table-dark table-hover">
+        <div class="table-responsive">
 
-            <tbody>
+            <table class="table table-dark table-hover">
 
-                <tr>
-                    <th>Port</th>
-                    <td>{{ database.port }}</td>
-                </tr>
+                <thead>
 
-                <tr>
-                    <th>Version</th>
-                    <td>{{ database.version }}</td>
-                </tr>
+                    <tr>
+                        <th>Database</th>
+                        <th>Host</th>
+                        <th>Port</th>
+                        <th>Status</th>
+                        <th>Version</th>
+                    </tr>
 
-                <tr>
-                    <th>Threads Connected</th>
-                    <td>{{ database.threads_connected }}</td>
-                </tr>
+                </thead>
 
-                <tr>
-                    <th>Threads Running</th>
-                    <td>{{ database.threads_running }}</td>
-                </tr>
+                <tbody id="databaseTable">
 
-            </tbody>
+                    {% if databases %}
 
-        </table>
+                        {% for database in databases %}
+
+                        <tr>
+
+                            <td>
+                                <i class="bi bi-database"></i>
+                                {{ database.service }}
+                            </td>
+
+                            <td>
+                                {{ database.host }}
+                            </td>
+
+                            <td>
+                                {{ database.port }}
+                            </td>
+
+                            <td>
+
+                                {% if database.status == "Running" %}
+
+                                <span class="badge bg-success">
+                                    Running
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+                                    Stopped
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ database.version }}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="5" class="text-center text-muted py-4">
+
+                                <i class="bi bi-database-x"></i>
+
+                                No Database Services Detected
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/database.js"></script>
 
 {% endblock %}
