@@ -278,7 +278,7 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "Disk Usage %",
+          "title": "Container Storage Usage %",
           "description": "",
           "links": [],
           "data": {
@@ -297,7 +297,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\",mountpoint=\"/\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\",mountpoint=\"/\"}))",
+                        "expr": "100 * (container_fs_usage_bytes{device=\"overlay\",id=\"/\"} / container_fs_limit_bytes{device=\"overlay\",id=\"/\"})",
                         "legendFormat": "__auto",
                         "range": true
                       }
@@ -992,3 +992,4 @@
     }
   }
 }
+
